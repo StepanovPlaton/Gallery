@@ -1,0 +1,39 @@
+version: "3.9"
+services:
+  # database:
+  #   image: postgres:13.3
+  #   environment:
+  #     # POSTGRES_DB: &DatabaseName "I_want"
+  #     POSTGRES_USER: &DatabaseUserName "iwpgdbuser"
+  #     POSTGRES_PASSWORD: &DatabasePassword "iwpgdbuser_password"
+  #     PGDATA: "/var/lib/postgresql/pgdata"
+  #   # ports:
+  #   #   - "5432:5432"
+  #   volumes:
+  #     - ./database/I_want.sql:/docker-entrypoint-initdb.d/I_want.sql
+  #     - ./database/pgdata:/var/lib/postgresql/pgdata
+
+  backend:
+    build: ./backend
+    environment:
+      GALLERY_DATABASE_URL: "sqlite:///./database.db"
+      GALLERY_ADMIN_PASSWORD: password
+      GALLERY_PREVIEW_TARGET_SIZE: 921600
+    # ports:
+    #   - "5000:5000"
+    # command: /bin/bash -c 'while !</dev/tcp/database/5432; do sleep 1; done; /application/run.sh'
+    command: /bin/bash -c '/application/run.sh'
+    volumes:
+      - ./backend/database.db:/application/database.db
+      - ./backend/Content:/application/Content
+    # depends_on:
+    #   - database
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8081:80"
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - backend
